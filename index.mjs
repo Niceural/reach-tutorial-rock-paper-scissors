@@ -6,6 +6,11 @@ const startingBalance = stdlib.parseCurrency(100);
 const accAlice = await stdlib.newTestAccount(startingBalance);
 const accBob = await stdlib.newTestAccount(startingBalance);
 
+const fmt = (x) => stdlib.formatCurrency(x, 4);
+const getBalance = async (who) => fmt(await stdlib.balanceOf(who));
+const beforeAlice = await getBalance(accAlice);
+const beforeBob = await getBalance(accBob);
+
 const ctcAlice = accAlice.contract(backend);
 const ctcBob = accBob.contract(backend, ctcAlice.getInfo());
 
@@ -24,9 +29,19 @@ const Player = (Who) => ({
 
 await Promise.all([
     ctcAlice.p.Alice({
-        ...Player("Alice"),
+        ...Player("Alice"), // splices the common Player interface into Alice's interface
+        wager: stdlib.parseCurrency(5), // defines her wager as 5 units of the network token. This is an example of using a concrete value, rather than a function, in a participant interact interface.
     }),
     ctcBob.p.Bob({
         ...Player("Bob"),
-    }),
+        acceptWager: (amt) => { // show the wager and immediately accept it by returning
+            console.log(`Bob accepts the wager of ${fmt(amt)}.`);
+        },
+    }), 
 ]);
+
+const afterAlice = await getBalance(accAlice);
+const afterBob = await getBalance(accBob);
+
+console.log(`Alice went from ${beforeAlice} to ${afterAlice}.`);
+console.log(`Bob went from ${beforeBob} to ${afterBob}.`);
