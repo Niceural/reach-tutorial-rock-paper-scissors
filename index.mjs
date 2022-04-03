@@ -17,27 +17,28 @@ const ctcBob = accBob.contract(backend, ctcAlice.getInfo());
 const HAND = ["Rock", "Paper", "Scissors"];
 const OUTCOME = ["Bob wins", "Draw", "Alice wins"];
 const Player = (Who) => ({
-    getHand: () => {
-        const hand = Math.floor(Math.random() * 3);
-        console.log(`${Who} played ${HAND[hand]}`);
-        return hand;
-    },
-    seeOutcome: (outcome) => {
-        console.log(`${Who} saw outcome ${OUTCOME[outcome]}`);
-    },
+  getHand: () => {
+    const hand = Math.floor(Math.random() * 3);
+    console.log(`${Who} played ${HAND[hand]}`);
+    return hand;
+  },
+  seeOutcome: (outcome) => {
+    console.log(`${Who} saw outcome ${OUTCOME[outcome]}`);
+  },
 });
 
 await Promise.all([
-    ctcAlice.p.Alice({
-        ...Player("Alice"), // splices the common Player interface into Alice's interface
-        wager: stdlib.parseCurrency(5), // defines her wager as 5 units of the network token. This is an example of using a concrete value, rather than a function, in a participant interact interface.
-    }),
-    ctcBob.p.Bob({
-        ...Player("Bob"),
-        acceptWager: (amt) => { // show the wager and immediately accept it by returning
-            console.log(`Bob accepts the wager of ${fmt(amt)}.`);
-        },
-    }), 
+  ctcAlice.p.Alice({
+    ...Player("Alice"), // splices the common Player interface into Alice's interface
+    wager: stdlib.parseCurrency(5), // defines her wager as 5 units of the network token. This is an example of using a concrete value, rather than a function, in a participant interact interface.
+  }),
+  ctcBob.p.Bob({
+    ...Player("Bob"),
+    acceptWager: (amt) => {
+      // show the wager and immediately accept it by returning
+      console.log(`Bob accepts the wager of ${fmt(amt)}.`);
+    },
+  }),
 ]);
 
 const afterAlice = await getBalance(accAlice);
