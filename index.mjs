@@ -27,18 +27,29 @@ const Player = (Who) => ({
   seeOutcome: (outcome) => {
     console.log(`${Who} saw outcome ${OUTCOME[outcome]}`);
   },
+  informTimeout: () => {
+    console.log(`${Who} observed a timeout`);
+  },
 });
 
 await Promise.all([
   ctcAlice.p.Alice({
     ...Player("Alice"), // splices the common Player interface into Alice's interface
     wager: stdlib.parseCurrency(5), // defines her wager as 5 units of the network token. This is an example of using a concrete value, rather than a function, in a participant interact interface.
+    deadline: 10,
   }),
   ctcBob.p.Bob({
     ...Player("Bob"),
-    acceptWager: (amt) => {
-      // show the wager and immediately accept it by returning
-      console.log(`Bob accepts the wager of ${fmt(amt)}.`);
+    // redefine Bob's acceptWager method as an asynchronous function, where half of the time it will take at least ten blocks on the Ethereum network by waiting for ten units of time to pass. We know that ten is the value of deadline, so this will cause a timeout
+    acceptWager: async (amt) => {
+      if (Math.random() <= 0.5) {
+        for (let i = 0; i < 10; i++) {
+          console.log(`Bob takes his sweet time...`);
+          await stdlib.wait(1);
+        }
+      } else {
+        console.log(`Bob accepts the wager of ${fmt(amt)}.`);
+      }
     },
   }),
 ]);
